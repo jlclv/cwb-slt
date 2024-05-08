@@ -1,32 +1,60 @@
 import SearchBar from "../components/SearchBar";
-import StartupsList from "../components/StartupsList";
+import StartupsListVector from "../components/StartupsListVector";
+import AlertInstruction from "../components/AlertInstructions";
 import { useState,useEffect } from "react";
 
 function VectorSearch() {
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState("Singapore");
+    const [vectorquery, setVectorquery] = useState([]);
+    const [startups, setStartups] = useState([]);
     
     const { SearchClient, AzureKeyCredential } = require("@azure/search-documents");
-    const [startups, setStartups] = useState([]);
+    const {OpenAI} = require('openai');
 
     const endpoint = process.env.REACT_APP_search_endpoint;
     const indexName = process.env.REACT_APP_index_name;
     const searchKey = process.env.REACT_APP_search_api_key;
+    const openapiKey = process.env.REACT_APP_openapi_key;
 
     const client = new SearchClient(endpoint, indexName, new AzureKeyCredential(searchKey));
-    
-    useEffect(() => {
-        getStartups()
+    const openai = new OpenAI({apiKey: openapiKey, dangerouslyAllowBrowser: true});
+
+    async function getEmbeddings() {
+        const embedding = await openai.embeddings.create({
+          model: "text-embedding-ada-002",
+          input: query,
+        });
+        setVectorquery(embedding.data[0].embedding)
+      }
+
+      useEffect(() => {
+        getEmbeddings();
     }, []);
 
-    const getStartups = async() => {
-        const searchResults = await client.search(query);
-        let startupList = [];
-        for await (const result of searchResults.results) {
-            startupList.push(result.document)            
-        }
-        setStartups(startupList);
-    }
 
+    const getStartupsVector = async() => {
+        let startupList = [];
+        const searchResults = await client.search("*",{
+            vectorSearchOptions: {
+              queries: [
+                {
+                  kind: "vector",
+                  fields: ["DescriptionVector"],
+                  kNearestNeighborsCount: 5,
+                  vector: vectorquery,
+                }
+              ],
+            },
+          });
+      
+          for await (const result of searchResults.results) {
+            let newStartup = {...result.document}
+            newStartup.score = result.score
+            startupList.push(newStartup)
+          }
+          console.log(startupList)
+          setStartups(startupList)
+    }
     
     function handleChange(event) {
         setQuery(event.target.value);
@@ -34,14 +62,16 @@ function VectorSearch() {
 
     function handleSearch(event) {
         event.preventDefault();
-        getStartups()
-        console.log(query);
+        getEmbeddings();
+        getStartupsVector();
     }
 
     return(
         <>
             <SearchBar query={query} onChange={handleChange} onSubmit={handleSearch} />
-            <StartupsList startups={startups}/>
+            <AlertInstruction text="Only the top 5 results will be shown"/>
+            <StartupsListVector startups={startups}/>
+            
         </>
     )
 }
