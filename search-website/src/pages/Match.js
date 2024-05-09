@@ -1,10 +1,81 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { saveAs } from 'file-saver';
 import AlertInstructions from "../components/AlertInstructions";
+import StartupExample from "../components/StartupExample";
 
 function Match() {
     const [excelFile, setExcelFile] = useState(null);
     const [typeError, setTypeError] = useState(null);
-    const [excelData, setExcelData] = useState(null);
+
+    const [excelData, setExcelData] = useState([]);
+    const [startups, setStartups] = useState([]);
+    const [isDone, setIsDone] = useState(null);
+
+    const { SearchClient, AzureKeyCredential } = require("@azure/search-documents");
+    const {OpenAI} = require('openai');
+
+    const endpoint = process.env.REACT_APP_search_endpoint;
+    const indexName = process.env.REACT_APP_index_name;
+    const searchKey = process.env.REACT_APP_search_api_key;
+    const openapiKey = process.env.REACT_APP_openapi_key;
+
+    const client = new SearchClient(endpoint, indexName, new AzureKeyCredential(searchKey));
+    const openai = new OpenAI({apiKey: openapiKey, dangerouslyAllowBrowser: true});
+  
+    const XLSX = require("xlsx");
+
+    useEffect(()=>{
+        if(startups.length === excelData.length && startups.length !== 0) {
+            setIsDone(true)
+            console.log(startups)
+        }
+    }, [startups,excelData])
+
+    const getEmbeddings = async(query) => {
+        const embedding = await openai.embeddings.create({
+          model: "text-embedding-ada-002",
+          input: query,
+        });
+        return(embedding.data[0].embedding)
+    }
+
+    const getStartupsVector = async(query) => {
+        let startupList = [];
+        let n = 1;
+        const embedding = await getEmbeddings(query);
+
+        const searchResults = await client.search("*",{
+            vectorSearchOptions: {
+                queries: [{
+                    kind: "vector",
+                    fields: ["DescriptionVector"],
+                    kNearestNeighborsCount: 3,
+                    vector: embedding,
+                }],},
+            });
+        
+            for await (const result of searchResults.results) {
+                let newStartup = {...result.document}
+                newStartup.score = result.score
+                const newStartupKeys = Object.fromEntries(
+                    Object.entries(newStartup).map(([k, v]) => [`${k}${n}`, v])
+                )
+                n += 1;
+                startupList.push(newStartupKeys)
+            }
+            return(Object.assign({}, ...startupList))
+    }
+
+    const exportToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(startups);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    
+        saveAs(blob, "Investor-Startup.xlsx");
+    };
 
     const handleFile = (event) => {
         let selectedFile = event.target.files[0];
@@ -19,7 +90,6 @@ function Match() {
                 reader.onload=(event)=>{
                     setExcelFile(event.target.result);
                 }
-
             } else{
                 setTypeError("Please upload an excel file.")
                 setExcelFile(null);
@@ -29,31 +99,48 @@ function Match() {
         }
     }
 
+    const handleData = (data) => {
+        setStartups([]);
+        data.map((row) => {
+            if (["Name","Company","Regions","Stage","Industry"].every(key => Object.keys(row).includes(key))) {
+                const qTemp = `A startup in ${row.Regions} in ${(row.Stage.toLowerCase()==="agnostic"?"any":row.Stage)} Stage focusing on ${(row.Industry.toLowerCase()==="agnostic"?"any industry":row.Industry)}`
+                getStartupsVector(qTemp).then(startup => {
+                    setStartups( startups => [...startups,Object.assign({},row,startup)])
+                })
+            } else{
+                setTypeError("Incorrect format. Please follow the format given")
+                setExcelFile(null);
+            }
+        })
+    }
+
+    const handleSubmission = async(event) => {
+        event.preventDefault();
+        if(excelFile !== null){
+            const workbook = XLSX.read(excelFile, {type:'buffer'});
+            const worksheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[worksheetName];
+            const data = XLSX.utils.sheet_to_json(worksheet);
+            
+            console.log(data.length)
+            setExcelData(data);
+            if (data){
+                handleData(data);
+            } else {
+                setTypeError("Something went wrong. Please try again")
+                setExcelFile(null);
+            }
+
+        }
+    }
+
     return(
         <div className="wrapper">
             <h2 className="ms-4 mt-4 mb-2">Match startups and investors</h2>
             <p className="ms-4 mb-2">Upload the excel file (.xlsx) to start. Please follow the format below: </p>
-            <table className="table ms-4 me-4 mb-4">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Company</th>
-                        <th>Regions</th>
-                        <th>Stage</th>
-                        <th>Industry</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>John Doe</td>
-                        <td>Company 1</td>
-                        <td>Asia Pacific</td>
-                        <td>Seed-Series A</td>
-                        <td>Impact, Sustainability / Climate, Deeptech</td>
-                    </tr>
-                </tbody>
-            </table>
-            <form className="form-group custom-form ms-4 me-4">
+            <StartupExample />
+            
+            <form className="form-group custom-form ms-4 me-4" onSubmit={handleSubmission}>
                 <div className="d-flex">
                     <input type="file" className="form-control" required onChange={handleFile} />
                     <button type="submit" className="btn btn-success btn-md ms-2">Upload</button>
@@ -62,6 +149,9 @@ function Match() {
                     <div className="alert alert-danger mt-2" role="alert">{typeError}</div>
                 )}
             </form>
+                {isDone&&(
+                    <button onClick={exportToExcel} className="btn btn-success btn-md ms-4 mt-2">Top 3 Matches</button>
+                )}
         </div>
     )
 }
