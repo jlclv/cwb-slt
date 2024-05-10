@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { saveAs } from 'file-saver';
-import AlertInstructions from "../components/AlertInstructions";
 import StartupExample from "../components/StartupExample";
 
 function Match() {
@@ -9,6 +8,7 @@ function Match() {
 
     const [excelData, setExcelData] = useState([]);
     const [startups, setStartups] = useState([]);
+    const [startupsCopy, setStartupsCopy] = useState([]);
     const [isDone, setIsDone] = useState(null);
 
     const { SearchClient, AzureKeyCredential } = require("@azure/search-documents");
@@ -29,7 +29,7 @@ function Match() {
             setIsDone(true)
             console.log(startups)
         }
-    }, [startups,excelData])
+    }, [startups,startupsCopy,excelData])
 
     const getEmbeddings = async(query) => {
         const embedding = await openai.embeddings.create({
@@ -66,7 +66,7 @@ function Match() {
             return(Object.assign({}, ...startupList))
     }
 
-    const exportToExcel = () => {
+    const exportToExcelTop3 = () => {
         const worksheet = XLSX.utils.json_to_sheet(startups);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
@@ -74,7 +74,17 @@ function Match() {
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
     
-        saveAs(blob, "Investor-Startup.xlsx");
+        saveAs(blob, "Investor-Startup-Top3.xlsx");
+    };
+    const exportToExcelTop1 = () => {
+        const worksheet = XLSX.utils.json_to_sheet(startupsCopy);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    
+        saveAs(blob, "Investor-Startup-Top1.xlsx");
     };
 
     const handleFile = (event) => {
@@ -101,11 +111,18 @@ function Match() {
 
     const handleData = (data) => {
         setStartups([]);
+        setStartupsCopy([]);
         data.map((row) => {
             if (["Name","Company","Regions","Stage","Industry"].every(key => Object.keys(row).includes(key))) {
                 const qTemp = `A startup in ${row.Regions} in ${(row.Stage.toLowerCase()==="agnostic"?"any":row.Stage)} Stage focusing on ${(row.Industry.toLowerCase()==="agnostic"?"any industry":row.Industry)}`
                 getStartupsVector(qTemp).then(startup => {
+                    let startupCopy = Object.assign({},startup);
+                    const arr = ["StartupID2","StartupID3","Name2","Name3","Location2","Location3","StartupStage2","StartupStage3","score2","score3","Industry2","Industry3","StartupName2","StartupName3"]
+                    arr.forEach(
+                        (element) =>{ delete startupCopy[element]}
+                    )
                     setStartups( startups => [...startups,Object.assign({},row,startup)])
+                    setStartupsCopy( startupsCopy => [...startupsCopy,Object.assign({},row,startupCopy)])
                 })
             } else{
                 setTypeError("Incorrect format. Please follow the format given")
@@ -122,7 +139,6 @@ function Match() {
             const worksheet = workbook.Sheets[worksheetName];
             const data = XLSX.utils.sheet_to_json(worksheet);
             
-            console.log(data.length)
             setExcelData(data);
             if (data){
                 handleData(data);
@@ -150,7 +166,10 @@ function Match() {
                 )}
             </form>
                 {isDone&&(
-                    <button onClick={exportToExcel} className="btn btn-success btn-md ms-4 mt-2">Top 3 Matches</button>
+                    <button onClick={exportToExcelTop1} className="btn btn-success btn-md ms-4 mt-2">Top 1 Matches</button>
+                )}
+                {isDone&&(
+                    <button onClick={exportToExcelTop3} className="btn btn-success btn-md ms-2 mt-2">Top 3 Matches</button>
                 )}
         </div>
     )
