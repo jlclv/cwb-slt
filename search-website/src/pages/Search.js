@@ -2,7 +2,7 @@ import SearchBar from "../components/SearchBar";
 import StartupsList from "../components/StartupsList";
 import { useState,useEffect } from "react";
 
-function Search() {
+function Search() { 
     const [query, setQuery] = useState("");
     
     const { SearchClient, AzureKeyCredential } = require("@azure/search-documents");
@@ -13,7 +13,7 @@ function Search() {
     const searchKey = process.env.REACT_APP_search_api_key;
 
     const client = new SearchClient(endpoint, indexName, new AzureKeyCredential(searchKey));
-    
+     
     useEffect(() => {
         getStartups()
     }, []);
@@ -25,6 +25,7 @@ function Search() {
             startupList.push(result.document)            
         }
         setStartups(startupList);
+        console.log(startupList)
     }
 
     

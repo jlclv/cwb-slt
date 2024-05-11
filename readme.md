@@ -11,6 +11,7 @@ A react webapp that allows its users to search for startups and match investors 
 - [Python](https://www.python.org/)
 - [Node.js](https://nodejs.org/en)
 - [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal)
+- [Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/)
 
 ## Usage
 ### Setup Environment Variables
@@ -18,17 +19,20 @@ Once an Azure AI Search resource has been created, create a `.env` file containi
 ```
 search_endpoint = "<YOUR-AZURE-AI-SEARCH-ENDPOINT>"
 index_name = "<NAME-OF-INDEX>"
-search_api_key="<YOUR-AZURE-SEARCH-API-KEY>"
+search_api_key="<NAME-OF-INDEX>"
 openapi_key = "<YOUR-OPEN-AI-API-KEY>"
 startupscsv = "<YOUR-CSV-FILE-PATH>"
 ```
 
-Create another `.env` file inside the search-website folder containing the following: 
+To run locally, setup the `api/local.settings.json` file with the following values: 
 ```
-REACT_APP_search_endpoint=<YOUR-AZURE-AI-SEARCH-ENDPOINT>
-REACT_APP_index_name=<NAME-OF-INDEX>
-REACT_APP_search_api_key=<YOUR-AZURE-SEARCH-API-KEY>
-REACT_APP_openapi_key=<YOUR-OPEN-AI-API-KEY>
+    {
+    "openaiKey":"<YOUR-OPEN-AI-API-KEY>",
+    "searchEndpoint":"<YOUR-AZURE-AI-SEARCH-ENDPOINT>",
+    "indexName":"<NAME-OF-INDEX>",
+    "searchApiKey":"<NAME-OF-INDEX>"
+  }
+
 ```
 
 ### Data source preparation
