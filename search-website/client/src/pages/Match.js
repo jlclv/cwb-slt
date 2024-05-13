@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { saveAs } from 'file-saver';
 import StartupExample from "../components/StartupExample";
+import axios from "axios";
+
 
 function Match() {
     const [excelFile, setExcelFile] = useState(null);
@@ -11,17 +13,6 @@ function Match() {
     const [startupsCopy, setStartupsCopy] = useState([]);
     const [isDone, setIsDone] = useState(null);
 
-    const { SearchClient, AzureKeyCredential } = require("@azure/search-documents");
-    const {OpenAI} = require('openai');
-
-    const endpoint = process.env.REACT_APP_search_endpoint;
-    const indexName = process.env.REACT_APP_index_name;
-    const searchKey = process.env.REACT_APP_search_api_key;
-    const openapiKey = process.env.REACT_APP_openapi_key;
-
-    const client = new SearchClient(endpoint, indexName, new AzureKeyCredential(searchKey));
-    const openai = new OpenAI({apiKey: openapiKey, dangerouslyAllowBrowser: true});
-  
     const XLSX = require("xlsx");
 
     useEffect(()=>{
@@ -31,39 +22,18 @@ function Match() {
         }
     }, [startups,startupsCopy,excelData])
 
-    const getEmbeddings = async(query) => {
-        const embedding = await openai.embeddings.create({
-          model: "text-embedding-ada-002",
-          input: query,
-        });
-        return(embedding.data[0].embedding)
-    }
-
     const getStartupsVector = async(query) => {
-        let startupList = [];
         let n = 1;
-        const embedding = await getEmbeddings(query);
-
-        const searchResults = await client.search("*",{
-            vectorSearchOptions: {
-                queries: [{
-                    kind: "vector",
-                    fields: ["DescriptionVector"],
-                    kNearestNeighborsCount: 3,
-                    vector: embedding,
-                }],},
-            });
-        
-            for await (const result of searchResults.results) {
-                let newStartup = {...result.document}
-                newStartup.score = result.score
-                const newStartupKeys = Object.fromEntries(
-                    Object.entries(newStartup).map(([k, v]) => [`${k}${n}`, v])
-                )
-                n += 1;
-                startupList.push(newStartupKeys)
-            }
-            return(Object.assign({}, ...startupList))
+        const api = process.env.REACT_APP_api;
+        const response = await axios.post(`${api}/vectorsearch`,{"query": query, "count":3})
+        const result = [];
+        (response.data).forEach((startup) => {
+            result.push(Object.fromEntries(
+                Object.entries(startup).map(([k, v]) => [`${k}${n}`, v])
+            ))
+            n++
+        })
+        return(Object.assign({},...result))
     }
 
     const exportToExcelTop3 = () => {

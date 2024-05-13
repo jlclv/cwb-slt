@@ -5,6 +5,7 @@ import VectorSearch from './pages/VectorSearch.js';
 
 import StartupsList from './components/StartupsList.js'
 import SearchBar from './components/SearchBar.js';
+import AddStartup from './pages/AddStartup.js';
 
 
 function App() {
@@ -19,6 +20,8 @@ function App() {
     case "/vectorsearch":
       Component = VectorSearch;
       break
+    case "/addstartup":
+      Component = AddStartup;
   }
   return (
     <>

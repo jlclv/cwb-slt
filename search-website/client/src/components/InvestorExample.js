@@ -1,4 +1,4 @@
-function StartupExample(){
+function InvestorExample(){
     return (
 
     <div className="wrapper me-4 ms-4">
@@ -26,4 +26,4 @@ function StartupExample(){
     )
 }
 
-export default StartupExample;
+export default InvestorExample;

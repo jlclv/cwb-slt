@@ -1,31 +1,21 @@
 import SearchBar from "../components/SearchBar";
 import StartupsList from "../components/StartupsList";
 import { useState,useEffect } from "react";
+import axios from "axios";
+
 
 function Search() { 
     const [query, setQuery] = useState("");
-    
-    const { SearchClient, AzureKeyCredential } = require("@azure/search-documents");
     const [startups, setStartups] = useState([]);
-
-    const endpoint = process.env.REACT_APP_search_endpoint;
-    const indexName = process.env.REACT_APP_index_name;
-    const searchKey = process.env.REACT_APP_search_api_key;
-
-    const client = new SearchClient(endpoint, indexName, new AzureKeyCredential(searchKey));
-     
+    
     useEffect(() => {
         getStartups()
     }, []);
 
     const getStartups = async() => {
-        const searchResults = await client.search(query);
-        let startupList = [];
-        for await (const result of searchResults.results) {
-            startupList.push(result.document)            
-        }
-        setStartups(startupList);
-        console.log(startupList)
+        const api = process.env.REACT_APP_api;
+        const result = await axios.post(`${api}/search`,{"query": query})
+        setStartups(result.data)
     }
 
     
@@ -36,7 +26,6 @@ function Search() {
     function handleSearch(event) {
         event.preventDefault();
         getStartups()
-        console.log(query);
     }
 
     return(

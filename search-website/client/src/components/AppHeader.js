@@ -1,20 +1,29 @@
 function AppHeader(page) {
-    let searchActive, matchActive, vectorsearchActive;
+    let searchActive, matchActive, vectorsearchActive, addStartupActive;
     switch (page.active) {
         case "/":
           searchActive = "nav-link active"
           matchActive = "nav-link"
           vectorsearchActive = "nav-link"
+          addStartupActive = "nav-link"
           break
         case "/match":
           searchActive = "nav-link"
           matchActive = "nav-link active"
           vectorsearchActive = "nav-link"
+          addStartupActive = "nav-link"
           break
         case "/vectorsearch":
           searchActive = "nav-link"
           matchActive = "nav-link"
           vectorsearchActive = "nav-link active"
+          addStartupActive = "nav-link"
+          break
+        case "/addstartup":
+          searchActive = "nav-link"
+          matchActive = "nav-link"
+          vectorsearchActive = "nav-link"
+          addStartupActive = "nav-link active"
           break
       }
     return (
@@ -30,6 +39,7 @@ function AppHeader(page) {
                     <a className={searchActive} href="/">Search</a>
                     <a className={vectorsearchActive} href="/vectorsearch">Vector Search</a>
                     <a className={matchActive} href="/match">Match</a>
+                    <a className={addStartupActive} href="/addstartup">Add</a>
                 </div>
                 </div>
             </div>

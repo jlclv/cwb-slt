@@ -24,7 +24,7 @@ openapi_key = "<YOUR-OPEN-AI-API-KEY>"
 startupscsv = "<YOUR-CSV-FILE-PATH>"
 ```
 
-To run locally, setup the `api/local.settings.json` file with the following values: 
+To run locally, setup the `api/local.settings.json` and `client/.env` file with the following values respectively: 
 ```
     {
     "openaiKey":"<YOUR-OPEN-AI-API-KEY>",
@@ -33,6 +33,9 @@ To run locally, setup the `api/local.settings.json` file with the following valu
     "searchApiKey":"<NAME-OF-INDEX>"
   }
 
+```
+```
+  REACT_APP_api=http://localhost:7071/api
 ```
 
 ### Data source preparation
@@ -46,7 +49,8 @@ Aliah,Startup 1,Singapore,Seed,Material Technology
 Use the [slt_startup_vector_search notebook](./slt_startup_vector_search.ipynb) to create the search index.
 
 ### Running the App
-To use the webapp, run the following code inside the search-website folder:
+To use the webapp, run the function and the app using following code inside the `search-website/client` and
+`search-website/api` folder:
 ```
 npm install
 npm run start

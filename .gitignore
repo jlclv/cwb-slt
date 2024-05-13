@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-/search-website/node_modules
+/search-website/client/node_modules
 /api/node_modules
 /.pnp
 .pnp.js
