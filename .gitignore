@@ -1,9 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+REMOVE.md
+__pycache__/
+
 # dependencies
 /node_modules
-/search-website/client/node_modules
-/api/node_modules
 /.pnp
 .pnp.js
 .env
