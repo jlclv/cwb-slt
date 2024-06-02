@@ -566,4 +566,3 @@ regions = [
         ]
     }
 ]
-print(regions)
