@@ -3,6 +3,7 @@
 A react webapp that allows its users to search for startups and match investors with startups accordingly.
 
 ![website search page picture](pictures/website1.png)
+![website match page picture](pictures/website2.png)
 
 ## Architecture
 
@@ -30,7 +31,7 @@ regions_index = "<NAME-OF-REGION-INDEX>"
 search_api_key="<YOUR-SEARCH-API-KEY>"
 openapi_key = "<YOUR-OPEN-AI-API-KEY>"
 startupscsv = "<YOUR-CSV-FILE-PATH>"
-stages = "<STARTUP-STAGES>" # e.g. Pre-Seed,Seed,Pre-A,...
+stages = "<STARTUP-STAGES>" # e.g. Pre-Seed,Seed,Pre-A,Series A,Series B,Series B+
 ```
 
 To run the website locally, create and setup a `search-website/api/local.settings.json` file with the following values respectively:
@@ -45,7 +46,7 @@ To run the website locally, create and setup a `search-website/api/local.setting
     "SearchRegionsIndexName": "<NAME-OF-REGION-INDEX>",
     "SearchApiQueryKey": "<YOUR-SEARCH-API-KEY>",
     "OpenAIAPIKey": "<YOUR-OPEN-AI-API-KEY>",
-    "Stages": "<STARTUP-STAGES>" // e.g. Pre-Seed,Seed,Pre-A,...
+    "Stages": "<STARTUP-STAGES>" // e.g. Pre-Seed,Seed,Pre-A,Series A,Series B,Series B+
   }
 }
 
