@@ -5,18 +5,23 @@ A react webapp that allows its users to search for startups and match investors 
 ![website search page picture](pictures/website1.png)
 ![website match page picture](pictures/website2.png)
 
+## Demo
+
+Try the website [here](https://polite-plant-0d024400f.5.azurestaticapps.net/) with credentials:
+`cwbslthptacc:KuS2lA37O9`. _The demo will only be available until June 19, 2024_.
+
 ## Architecture
 
 ![solution architecture](pictures/architecture.svg)
 
 ## Prerequisites
 
--   [VS Code](https://code.visualstudio.com/Download)
--   [Python](https://www.python.org/)
--   [Node.js](https://nodejs.org/en)
--   [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal)
--   [Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/)
--   [Open AI](https://openai.com/index/openai-api/)
+- [VS Code](https://code.visualstudio.com/Download)
+- [Python](https://www.python.org/)
+- [Node.js](https://nodejs.org/en)
+- [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal)
+- [Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/)
+- [Open AI](https://openai.com/index/openai-api/)
 
 ## Usage
 

@@ -1,14 +1,53 @@
 {
+  "navigationFallback": {
+    "rewrite": "/"
+  },
+
   "routes": [
     {
-      "route": "/*",
+      "route": "/",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/match",
+      "redirect": "/match",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/addstartup",
+      "redirect": "/addstartup",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/removestartup",
+      "redirect": "/removestartup",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/addregion",
+      "redirect": "/addregion",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/removeregion",
+      "redirect": "/removeregion",
       "allowedRoles": ["authenticated"]
     }
   ],
   "responseOverrides": {
     "401": {
       "statusCode": 302,
-      "redirect": "/.auth/login/aad"
+      "redirect": "/.auth/login/github"
+    }
+  },
+  "auth": {
+    "identityProviders": {
+      "github": {
+        "registration": {
+          "clientIdSettingName": "GITHUB_CLIENT_ID",
+          "clientSecretSettingName": "GITHUB_CLIENT_SECRET"
+        }
+      }
     }
   }
 }
